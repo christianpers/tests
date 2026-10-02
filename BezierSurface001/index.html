@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>___BEZIER SURFACE___</title>
+	
+	<style>
+		html, body{
+			margin: 0;
+			width: 100%;
+			height: 100%;
+		}
+
+		
+		#gl{
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+
+		#audioAnalyzerWrapper{
+			position: absolute;
+			bottom: 0;
+			right: 0;
+			width: 20%;
+			height: 20%;
+		}
+		#audioAnalyzerWrapper.show .selectItem{
+			opacity: 1;
+		}
+
+
+		.waveformAnalyser{
+			z-index: 0;
+		}
+
+		
+
+
+		.selectTitle{
+			color: white;
+			text-align: center;
+			margin: 0;
+			/*margin-top: 80%;*/
+			font-size: 10px;
+			text-transform: uppercase;
+			font-family: Verdana;
+		}
+		
+		
+		
+		#selectMenu{
+			position: absolute;
+			width: 80px;
+			display: none;
+		}
+		
+
+		.menuOption{
+			
+			margin: 0;
+    		padding: 0;
+    		width: 50%;
+    		float: left;
+		}
+
+		.menuItem{
+			list-style: none;
+			width: 100%;
+			display: block;
+			padding: 5px 0 5px 0;
+			cursor: pointer;
+			position: relative;
+			background-color: rgba(255,255,255,.1);
+			border-bottom: 1px solid black;
+		}
+
+		.menuItem:hover{
+			background: rgba(255,255,255,0.2);
+		}
+
+		.selectLayer{
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+		}
+
+
+		#controlPointsUIWrapper{
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100px;
+		}
+
+		.controlPointItem{
+			height: 40px;
+		    width: 100%;
+		    background-color: rgba(255,255,255,.1);
+		    position: relative;
+		    border-bottom: 1px solid black;
+		}
+
+		.pointColor{
+			width: 20%;
+			float: left;
+		    height: 100%;
+		}
+
+		.status{
+			text-transform: uppercase;
+			width: 80%;
+			float: left;
+		    color: white;
+		    font-family: Verdana;
+		    cursor: pointer;
+		    text-align: center;
+		    height: 100%;
+		    line-height: 40px;
+		    font-size: 10px;
+		}
+
+		#toggleUI{
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			height: 40px;
+			width: 100px;
+			background-color: rgba(255,255,255,.1);
+			color: white;
+			cursor: pointer;
+		}
+
+		#toggleUI .selectTitle{
+			line-height: 40px;
+		}
+
+
+	</style>
+
+	<script>
+
+
+		window.addClass = function(el, className) {
+		  if (el.classList)
+		    el.classList.add(className)
+		  else if (!hasClass(el, className)) el.className += " " + className
+		}
+
+		window.removeClass = function(el, className) {
+		  if (el.classList)
+		    el.classList.remove(className)
+		  else if (hasClass(el, className)) {
+		    var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
+		    el.className=el.className.replace(reg, ' ')
+		  }
+		}
+
+		if (!window.NS)
+			window.NS = {};
+
+		window.NS.GL = {};
+
+		window.NS.params = {};
+		window.NS.params.detail = 40;
+		window.NS.params.currentControlPoint = null;
+
+		var color1 = [0,0.4,0];
+		var color2 = [0.61, 0.61, 0.61];
+		var color3 = [1.0, 1.0, 1.0];
+		var color4 = [0.74, 0.15, 0.2];
+		var color5 = [0.878, 0.435, 0.545];
+		var color6 = [0.286, 0.235, 0.168];
+		var color7 = [0.643, 0.392, 0.133];
+		var color8 = [0.921, 0.537, 0.192];
+		var color9 = [0.968, 0.886, 0.419];
+		var color10 = [0.184, 0.282, 0.305];
+		var color11 = [0.266, 0.537, 0.101];
+		var color12 = [0.639, 0.807, 0.152];
+		var color13 = [0.105, 0.149, 0.196];
+		var color14 = [0, 0.341, 0.517];
+		var color15 = [0.192, 0.635, 0.949];
+		var color16 = [0.698, 0.862, 0.937];
+
+		window.NS.params.colors = [
+						color1,
+						color2,
+						color3,
+						color4,
+						color5,
+						color6,
+						color7,
+						color8,
+						color9,
+						color10,
+						color11,
+						color12,
+						color13,
+						color14,
+						color15,
+						color16
+		];
+
+		
+		var pointA = { pos: [ -1.0, 1.0, 0.0 ], id: 10, color: color1};
+		var pointB = { pos: [ -0.5, 1.0, 0.0 ], id: 20, color: color2};
+		var pointC = { pos: [ 0.5, 1.0, 0.0 ], id: 30, color: color3};
+		var pointD = { pos: [ 1.0, 1.0, 0.0 ], id: 40, color: color4};
+		
+		var pointE = { pos: [ -1.0, 0.5, 0.0 ], id: 50, color: color5};
+		var pointF = { pos: [ -0.5, 0.5, 0.0 ], id: 60, color: color6};
+		var pointG = { pos: [ 0.5, 0.5, 0.0 ], id: 70, color: color7};
+		var pointH = { pos: [ 1.0, 0.5, 0.0 ], id: 80, color: color8};
+		
+		var pointI = { pos: [ -1.0, -0.5, 0.0 ], id: 90, color: color9};
+		var pointJ = { pos: [ -0.5, -0.5, 0.0 ], id: 100, color: color10};
+		var pointK = { pos: [ 0.5, -0.5, 0.0 ], id: 110, color: color11};
+		var pointL = { pos: [ 1.0, -0.5, 0.0 ], id: 120, color: color12};
+		
+		var pointM = { pos: [ -1.0, -1.0, 0.0 ], id: 130, color: color13};
+		var pointN = { pos: [ -0.5, -1.0, 0.0 ], id: 140, color: color14};
+		var pointO = { pos: [ 0.5, -1.0, 0.0 ], id: 150, color: color15};
+		var pointP = { pos: [ 1.0, -1.0, 0.0 ], id: 160, color: color16};
+
+		window.NS.params.pointCoords = [
+							pointA, 
+							pointB, 
+							pointC, 
+							pointD, 
+							pointE, 
+							pointF, 
+							pointG, 
+							pointH, 
+							pointI,
+							pointJ,
+							pointK,
+							pointL,
+							pointM,
+							pointN,
+							pointO,
+							pointP
+						];
+
+		window.NS.params.audioData = [];
+
+		var spectrumAnalyzer, source;
+		var audioCtx = new webkitAudioContext();		
+
+		function requestMicAccess(){
+
+			navigator.webkitGetUserMedia({audio:true}, gotStream, function(e) {
+
+				console.log(e);
+
+			});
+           	
+            
+      	};
+
+		function gotStream(micIn){
+
+			console.log('got stream');
+
+			var micStreamNode = audioCtx.createMediaStreamSource(micIn);
+			source = micStreamNode;
+
+			createAudioAnalyser();
+
+		};
+
+		function createAudioAnalyser(){
+
+			spectrumAnalyzer = new window.NS.Framework.SpectrumAnalyser();
+			spectrumAnalyzer.setup(audioCtx, document.getElementById('audioAnalyzerWrapper'));
+			spectrumAnalyzer.colorTheme = ['green','purple', 'orange'];
+			spectrumAnalyzer.connect(source);
+			spectrumAnalyzer.update();
+		};
+
+		window.onAudioData = function(data){
+
+			var subbands = [2, 3, 4, 6, 8, 20, 30, 40, 50, 55, 60];
+		
+			for (var i=0;i<subbands.length;i++){
+				window.NS.params.audioData[i] = data[0][subbands[i]]/5;
+			}
+		
+			// console.log( params.audioData[2] );
+
+			// update(data);
+			// draw();	
+		};
+
+		function init(){
+
+			requestMicAccess();
+
+			scene = new window.NS.GL.SceneMain();
+			scene.init();
+			
+			setTimeout(function(){
+
+				start();
+				console.log('drawing started');
+				// scene.loop();
+			},1500);
+		};
+		
+		
+
+
+		function start(){
+
+			requestAnimationFrame(start);
+
+			scene.loop();
+
+		};
+
+	</script>
+
+</head>
+
+
+
+<body onload="init()">
+
+	
+	<div id="wrapper">
+		<canvas id="gl" width="800" height="600"></canvas>
+
+		<div id="audioAnalyzerWrapper">
+			
+		</div>
+
+		<div id="selectMenu">
+			<ul class="menuOption axis">
+				<li class="menuItem axisItem" data-idx="0" data-type="axis"><h5 class="selectTitle">X</h5><div class="selectLayer"></div></li>
+				<li class="menuItem axisItem" data-idx="1" data-type="axis"><h5 class="selectTitle">Y</h5><div class="selectLayer"></div></li>
+				<li class="menuItem axisItem" data-idx="2" data-type="axis"><h5 class="selectTitle">Z</h5><div class="selectLayer"></div></li>
+			</ul>
+			<ul class="menuOption subband">
+				<li class="menuItem subbandItem" data-idx="1" data-type="subband"><h5 class="selectTitle">1</h5><div class="selectLayer"></div></li>
+				<li class="menuItem subbandItem" data-idx="2" data-type="subband"><h5 class="selectTitle">2</h5><div class="selectLayer"></div></li>
+				<li class="menuItem subbandItem" data-idx="3" data-type="subband"><h5 class="selectTitle">3</h5><div class="selectLayer"></div></li>
+				<li class="menuItem subbandItem" data-idx="4" data-type="subband"><h5 class="selectTitle">4</h5><div class="selectLayer"></div></li>
+				<li class="menuItem subbandItem" data-idx="5" data-type="subband"><h5 class="selectTitle">5</h5><div class="selectLayer"></div></li>
+				<li class="menuItem subbandItem" data-idx="6" data-type="subband"><h5 class="selectTitle">6</h5><div class="selectLayer"></div></li>
+				<li class="menuItem subbandItem" data-idx="7" data-type="subband"><h5 class="selectTitle">7</h5><div class="selectLayer"></div></li>
+				<li class="menuItem subbandItem" data-idx="8" data-type="subband"><h5 class="selectTitle">8</h5><div class="selectLayer"></div></li>
+				<li class="menuItem subbandItem" data-idx="9" data-type="subband"><h5 class="selectTitle">9</h5><div class="selectLayer"></div></li>
+				<li class="menuItem subbandItem" data-idx="10" data-type="subband"><h5 class="selectTitle">10</h5><div class="selectLayer"></div></li>
+
+			</ul>
+		</div>
+
+		<div id="controlPointsUIWrapper">
+			
+			
+		</div>
+
+		<div id="toggleUI"><h5 class="selectTitle hide">HIDE UI</h5><h5 class="selectTitle show">SHOW UI</h5><div class="selectLayer"></div></div>
+	</div>
+
+
+
+
+
+	<script src="js/libs/webgl-utils.js"></script>
+	
+	<script src="js/libs/gl-matrix.min.js"></script>
+
+	<script src="js/framework/SpectrumAnalyzer.js"></script>
+	<script src="js/framework/Camera.js"></script>
+	<script src="js/framework/CameraInteractor.js"></script>
+	<script src="js/framework/SceneTransforms.js"></script>
+	<script src="js/framework/View.js"></script>
+	<script src="js/framework/Texture.js"></script>
+	<script src="js/framework/Framebuffer.js"></script>
+	<script src="js/framework/Scene.js"></script>
+	<script src="js/framework/ShaderProgram.js"></script>
+
+	<script src="js/Mesh.js"></script>
+	<script src="js/Views/ViewBezier.js"></script>
+	<script src="js/Views/ViewBezierTest.js"></script>
+
+	<script src="js/Views/ViewControlPoint.js"></script>
+	<script src="js/Views/ViewCopy.js"></script>
+	<script src="js/Views/ViewControlVals.js"></script>
+	<script src="js/Views/ViewSave.js"></script>
+	<script src="js/Views/ViewCalculate.js"></script>
+	<script src="js/Views/ViewMap.js"></script>
+
+	
+	<script src="js/ViewConnectPoint.js"></script>
+	<script src="js/SelectMenu.js"></script>
+	<script src="js/ViewControlPointUI.js"></script>
+	<script src="js/ViewToggleUI.js"></script>
+	
+	<script src="js/SceneMain.js"></script>
+
+
+
+	
+</body>
+</html>

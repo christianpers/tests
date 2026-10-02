@@ -1,0 +1,59 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255,255,255,0.8);
+    color: black;
+    display: none;
+}
+
+.container {
+    display: flex;
+    position: relative;
+}
+
+#inputFilesContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20vw;
+    height: 20vh;
+    background: grey;
+}
+
+.style-options {
+    margin-left: 50vw;
+}
+
+.style-options > h4 {
+    cursor: pointer;
+}
+
+.selected-option {
+    margin-left: 80px;
+}
+
+.respContainer {
+    margin-top: 50vh;
+}
+
+.dz-error-message {
+    display: none;
+}
+
+.dz-success-mark {
+    display: none;
+}
+
+.dz-error-mark {
+    display: none;
+}

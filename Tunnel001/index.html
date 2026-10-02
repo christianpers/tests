@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>___TUNNEL___</title>
+	
+	<style>
+		html, body{
+			margin: 0;
+			width: 100%;
+			height: 100%;
+		}
+
+		
+		#gl{
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+	</style>
+
+	<script>
+
+		if (!window.NS)
+			window.NS = {};
+
+		window.NS.GL = {};
+
+		window.NS.params = {};
+
+		window.NS.params.audioData = [];
+
+		var spectrumAnalyzer, source;
+		var audioCtx = new AudioContext();		
+
+		function requestMicAccess(){
+
+			navigator.webkitGetUserMedia({audio:true}, gotStream, function(e) {
+
+				console.log(e);
+
+			});
+           	
+            
+      	};
+
+		function gotStream(micIn){
+
+			console.log('got stream');
+
+			var micStreamNode = audioCtx.createMediaStreamSource(micIn);
+			source = micStreamNode;
+
+			createAudioAnalyser();
+
+		};
+
+		function createAudioAnalyser(){
+
+			spectrumAnalyzer = new window.NS.Framework.SpectrumAnalyser();
+			spectrumAnalyzer.setup(audioCtx, document.getElementById('audioAnalyzerWrapper'));
+			spectrumAnalyzer.colorTheme = ['green','purple', 'orange'];
+			spectrumAnalyzer.connect(source);
+			spectrumAnalyzer.update();
+		};
+
+		window.onAudioData = function(data){
+
+			var subbands = [2, 3, 4, 6, 8, 20, 30, 40, 50, 55, 60];
+		
+			for (var i=0;i<subbands.length;i++){
+				window.NS.params.audioData[i] = data[0][subbands[i]] / 1.5;
+			}
+
+			console.log(window.NS.params.audioData[2]);
+		
+			// console.log( params.audioData[2] );
+
+			// update(data);
+			// draw();	
+		};
+
+
+
+		function init(){
+
+			var images1Loaded = false;
+			var images2Loaded = false;
+
+			requestMicAccess();
+
+			window.NS.texture = new Image();
+			window.NS.texture.onload = function(){
+
+				// console.log(window.NS.texture.width);
+
+				// scene = new window.NS.GL.SceneMain();
+				// scene.init();
+				images1Loaded = true;
+				if (images2Loaded){
+					scene = new window.NS.GL.SceneMain();
+					scene.init();
+
+				}
+
+				
+			};
+			window.NS.texture.src = 'bgTest.jpg';
+
+			window.NS.textureTwo = new Image();
+			window.NS.textureTwo.onload = function(){
+
+				images2Loaded = true;
+				if (images1Loaded){
+					scene = new window.NS.GL.SceneMain();
+					scene.init();
+				}
+			};
+
+			window.NS.textureTwo.src = 'bgTest2.jpg';
+
+			// scene = new window.NS.GL.SceneMain();
+			// scene.init();
+			
+			setTimeout(function(){
+
+				start();
+				console.log('drawing started');
+				// scene.loop();
+			},1000);
+		};
+		
+		
+
+
+		function start(){
+
+			requestAnimationFrame(start);
+
+			scene.loop();
+
+		};
+
+	</script>
+
+</head>
+
+
+
+<body onload="init()">
+
+	
+	<div id="wrapper">
+		<canvas id="gl" width="800" height="600"></canvas>
+	</div>
+
+	<script src="js/libs/webgl-utils.js"></script>
+	
+	<script src="js/libs/gl-matrix.min.js"></script>
+
+	<script src="js/framework/SpectrumAnalyzer.js"></script>
+	<script src="js/framework/Camera.js"></script>
+	<script src="js/framework/CameraInteractor.js"></script>
+	<script src="js/framework/SceneTransforms.js"></script>
+	<script src="js/framework/View.js"></script>
+	<script src="js/framework/Texture.js"></script>
+	<script src="js/framework/Scene.js"></script>
+	<script src="js/framework/ShaderProgram.js"></script>
+
+	<script src="js/Mesh.js"></script>
+	<script src="js/Views/ViewPlain.js"></script>
+	<script src="js/Views/ViewTunnel.js"></script>
+	<script src="js/SceneMain.js"></script>
+
+
+
+	
+</body>
+</html>

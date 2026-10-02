@@ -1,0 +1,258 @@
+	<!DOCTYPE html>
+<html>
+<head>
+	<title>___Texture003___</title>
+	
+
+
+	<style>
+		html, body{
+			margin: 0;
+			width: 100%;
+			height: 100%;
+		}
+
+		#wrapper{
+			height: 600px;
+			width: 800px;
+			position: absolute;
+			top: 0;
+			left: 0;
+
+		}
+		#glNewbie{
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+		
+	</style>
+
+
+
+
+	
+	<script>
+
+		if (!window.NS)
+			window.NS = {};
+
+		window.NS.GL = {};
+
+		
+
+		var params = {};
+
+	
+
+		params.sqrtParticles = 512;
+    	// params.sqrtParticles = 512;
+		// params.numParticles = 64;
+		// params.offset = 0;
+		// params.posOffset = 4.5;
+		// params.velOffset = 0.01;
+		// params.accOffset = 0.001;
+		// params.timeOffset = 0.001;
+		// params.decreaseRate = 0.9963;
+		// params.showForceMap = false;
+		// params.showMap = false;
+
+		params.audioData = [];
+
+		var images = [];
+
+		var counter = 0;
+
+		var spectrumAnalyzer, source;
+		var audioCtx = new webkitAudioContext();
+
+		
+
+		function requestMicAccess(){
+
+			navigator.webkitGetUserMedia({audio:true}, gotStream, function(e) {
+
+				console.log(e);
+
+			});
+           	
+            
+      	};
+
+		function gotStream(micIn){
+
+			console.log('got stream');
+
+			var micStreamNode = audioCtx.createMediaStreamSource(micIn);
+			source = micStreamNode;
+
+			createAudioAnalyser();
+
+		};
+
+		function createAudioAnalyser(){
+
+			spectrumAnalyzer = new window.NS.SpectrumAnalyser();
+			spectrumAnalyzer.setup(audioCtx);
+			// spectrumAnalyzer.colorTheme = colorTheme;
+			spectrumAnalyzer.connect(source);
+			spectrumAnalyzer.update();
+		};
+
+		window.onAudioData = function(data){
+
+			var subbands = [1, 2, 4, 6, 8, 20, 30, 40, 50, 60];
+		
+			for (var i=0;i<subbands.length;i++){
+				params.audioData[i] = data[0][subbands[i]]/100;
+			}
+		
+			// console.log( params.audioData );
+
+			// update(data);
+			// draw();	
+		};
+
+		function checkReady(){
+
+			counter++;
+			if (counter == 1){
+				initGL();
+			}
+		};
+
+		function init(){
+
+			// loadTextureImage();
+			// loadBgImage();
+			// loadDotImage();
+
+			initGL();
+		};
+		
+		var counter = 0;
+		var scene;
+		var main = null;
+
+		function initGL(){
+
+			requestMicAccess();
+
+			scene = new window.NS.GL.Framework.SceneTexture();
+			scene.init();
+			
+			setTimeout(function(){
+
+				start();
+				console.log('drawing started');
+				// scene.loop();
+			},2000);
+
+			// window.addEventListener("keypress", function(e) {
+			// 	if(e.keyCode == 109) {
+			// 		params.showMap = !params.showMap;
+			// 		params.showForceMap = false;
+			// 	} else if(e.keyCode == 102) {
+			// 		params.showMap = false;
+			// 		params.showForceMap = !params.showForceMap;
+			// 	} else if(e.keyCode == 114) {
+			// 		main.scene.resetCamera();
+
+			// 	}
+			// });
+
+			// requestMicAccess();
+
+		};
+
+		function start(){
+
+			requestAnimationFrame(start);
+
+			scene.loop();
+
+			// setInterval(function(){
+
+			// 	// if (counter == 10)
+			// 	// 	return;
+
+			// 	scene.loop();
+
+			// 	// counter++;
+			// },1000);
+		};
+
+		
+
+		
+
+	</script>
+
+</head>
+
+
+
+<body onload="init()">
+	<div id="wrapper">
+		<canvas id="glNewbie" width="800" height="600"></canvas>
+	</div>
+
+	<script src="js/libs/webgl-utils.js"></script>
+	<script src="SpectrumAnalyzer.js"></script>
+
+
+	<script src="js/framework/Camera.js"></script>
+	<script src="js/framework/CameraInteractor.js"></script>
+
+	<script src="js/MeshParticles.js"></script>
+	<script src="js/Mesh.js"></script>
+
+	<script src="js/SceneTransforms.js"></script>
+
+	
+	<script src="js/Framebuffer.js"></script>
+	<script src="js/Texture.js"></script>
+
+
+	
+
+
+
+	
+	<script src="js/View.js"></script>
+	<script src="js/views/ViewCalculate.js"></script>
+	<script src="js/views/ViewCopy.js"></script>
+	<script src="js/views/ViewMap.js"></script>
+	<script src="js/views/ViewSave.js"></script>
+	
+	<script src="js/views/ViewForce.js"></script>
+	<script src="js/views/ViewTest.js"></script>
+	<script src="js/views/ViewFramebuffer.js"></script> 
+
+
+	
+	<script src="js/Scene.js"></script>
+	<script src="js/SceneTexture.js"></script>
+	
+	
+	
+	
+	<script src="js/SpectrumAnalyzer.js"></script>
+	
+	<script src="js/ShaderProgram.js"></script>
+
+	<script src="js/Global.js"></script>
+	
+	<script src="gl-matrix-min.js"></script>
+	<!--<script src="common.js"></script>
+	<script src="../../js/JSObjects/Cube.js"></script>
+	<script src="mat4.js"></script>
+	<script src="vec3.js"></script>
+	<script src="vec4.js"></script>-->
+
+	
+</body>
+</html>
